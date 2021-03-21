@@ -1,14 +1,34 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<title>{% block title %}username{% endblock %}</title>
+<title>{% block title %}{{ user['user_name'] }} - User Page{% endblock %}</title>
 {% endblock %}
 
 {% block body %}
 <div class="row">
     <div class="col-sm-3"></div>
-    <div class="col-sm-2">pic column</div>
-    <div class="col-sm-4">content column</div>
+    <div class="col-sm-2">
+        <ul class="list-group">
+            <li class="list-group-item"><img src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/0.png" style="width: 120px;;height: 120px;"></li>
+            <li class="list-group-item "><strong>User ID:</strong> {{ user.key.name }}</li>
+            <li class="list-group-item"><strong>Username:</strong> {{ user['user_name'] }} </li>
+        </ul>
+        <form action="/user/{{ user.key.name }}" method="POST">
+            <h3>Change Password</h3>
+            <div class="form-group">
+              <label for="currpass">Current Password:</label>
+              <input type="password" class="form-control" name="currpass">
+            </div>
+            <div class="form-group">
+              <label for="pass">New Password:</label>
+              <input type="password" class="form-control" name="newpass">
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+    <div class="col-sm-4">
+    <h1>Posts</h1>
+    </div>
     <div class="col-sm-3"></div>
 </div>
 {% endblock %}
