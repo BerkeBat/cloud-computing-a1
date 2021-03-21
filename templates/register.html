@@ -8,6 +8,12 @@
 <div class="row">
     <div class="col-sm-4"></div>
     <div class="col-sm-4">
+        {% if showalert == True %}
+          <div class="alert alert-danger" role="alert" id="alertdiv" style="display: block;">
+            The ID already exists, please try another.
+          </div>
+        {% endif %}
+
         <form action="/register" method="POST">
             <div class="form-group">
               <label for="userid">ID:</label>
