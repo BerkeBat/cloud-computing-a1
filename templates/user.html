@@ -11,25 +11,27 @@
         <ul class="list-group">
             <li class="list-group-item"><img src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/0.png" style="width: 120px;;height: 120px;"></li>
             <li class="list-group-item "><strong>User ID:</strong> {{ user.key.name }}</li>
-            <li class="list-group-item"><strong>Username:</strong> {{ user['user_name'] }} </li>
+            <li class="list-group-item"><strong>Username:</strong> {{ user['user_name'] }}</li>
         </ul>
         {% if pass_change_valid == False %}
           <div class="alert alert-danger" role="alert" style="display: block;">
             The old password is incorrect
           </div>
         {% endif %}
-        <form action="/user/{{ user.key.name }}" method="POST">
-            <h3>Change Password</h3>
-            <div class="form-group">
-              <label for="currpass">Current Password:</label>
-              <input type="password" class="form-control" name="currpass">
-            </div>
-            <div class="form-group">
-              <label for="pass">New Password:</label>
-              <input type="password" class="form-control" name="newpass">
-            </div>
-            <button type="submit" class="btn btn-primary">Change</button>
-        </form>
+        {% if g.current_user != None and g.current_user.key.name == user.key.name %}
+            <form action="/user/{{ user.key.name }}" method="POST">
+              <h3>Change Password</h3>
+              <div class="form-group">
+                <label for="currpass">Current Password:</label>
+                <input type="password" class="form-control" name="currpass">
+              </div>
+              <div class="form-group">
+                <label for="pass">New Password:</label>
+                <input type="password" class="form-control" name="newpass">
+              </div>
+              <button type="submit" class="btn btn-primary">Change</button>
+            </form>
+          {% endif %}
     </div>
     <div class="col-sm-4">
     <h1>Posts</h1>

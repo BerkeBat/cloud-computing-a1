@@ -7,7 +7,24 @@
 {% block body %}
 <div class="row">
     <div class="col-sm-4"></div>
-    <div class="col-sm-4"><h1>Welcome! Please log in to use the online forum</h1> </div>
-    <div class="col-sm-4"></div>
+    <div class="col-sm-4">
+    {% if g.current_user == None %}
+        <h2>Welcome! Please log in to post to the online forum</h2> </div>
+    {% else %}
+        <form action="/" method="POST">
+            <div class="form-group">
+                <label for="subject">Subject</label>
+                <input type="text" class="form-control" name="subject">
+            </div>
+            <div class="form-group">
+                <label for="messagearea">Message</label>
+                <textarea class="form-control" name="messagearea" rows="3"></textarea>
+            </div>
+            <input type="submit" class="btn btn-primary" value="Submit">
+        </form>
+    {% endif %}
+    <hr>
+    <div class="col-sm-4">
+    </div>
 </div>
 {% endblock %}

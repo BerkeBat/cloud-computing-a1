@@ -1,5 +1,5 @@
 from urllib.parse import uses_fragment
-from flask import Flask, json, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, g
 from flask.globals import current_app
 from flask.helpers import url_for
 from google.auth.transport import requests
@@ -13,23 +13,44 @@ logging.basicConfig(level=logging.DEBUG)
 datastore_client = datastore.Client()
 storage_client = storage.Client()
 app = Flask(__name__)
-current_user = "none"
+current_user = None
 
+class CurrentUser:
+    def __init__(self, user):
+        self.user = user
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-
+    global current_user
+    g.current_user = current_user
+    if request.method == 'POST':
+        entered_subject = request.form['subject']
+        entered_message = request.form['messagearea']
+        post_message(entered_subject, entered_message)
+    
     return render_template('index.html')
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    # if request.method == 'POST':
-    #     current_user = 
-    return render_template('login.html')
-
+    global current_user
+    g.current_user = current_user
+    login_success = True
+    if request.method == 'POST':
+        entered_id = request.form['userid']
+        entered_pass = request.form['pass']
+        if login_valid(entered_id, entered_pass):
+            current_user = get_user_by_userid(entered_id)
+            g.current_user = current_user
+            return redirect(url_for('index'))
+        else:
+            login_success = False
+            return render_template('login.html', login_success = login_success)
+    return render_template('login.html', login_success = login_success)
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
+    global current_user
+    g.current_user = current_user
     if request.method == 'POST':
         kind = "user"
         id = request.form["userid"]
@@ -43,17 +64,17 @@ def register():
             newUser["password"] = password
             # upload_userimage(user_image, username)
             datastore_client.put(newUser)
-
-
             return redirect(url_for('login'))
         else:
-            return render_template('register.html', showalert=True)
-
+            return render_template('register.html', register_valid=False)
     else:
-        return render_template('register.html', showalert=False)
+        return render_template('register.html', register_valid=True)
 
 @app.route('/user/<string:userid>', methods=['POST', 'GET'])
 def user(userid):
+    global current_user
+    app.logger.info(current_user)
+    g.current_user = current_user
     pass_change_valid = True
     if request.method == 'POST':
         with datastore_client.transaction():
@@ -65,18 +86,38 @@ def user(userid):
                 pass_change_valid = True
             else:
                 pass_change_valid = False
-
     user = get_user_by_userid(userid)
     if user == None:
         return "User does not exist"
     else:
         return render_template('user.html', user = user, pass_change_valid=pass_change_valid)
 
+@app.route('/logout')
+def logout():
+    global current_user
+    current_user = None
+    return redirect(url_for('index'))
+
 def get_user_by_userid(userid):
     user_key = datastore_client.key("user", str(userid))
     gotten_user = datastore_client.get(user_key)
-    app.logger.info(gotten_user)
     return  gotten_user
+
+def post_message(subject, message):
+    with datastore_client.transaction():
+        post_key = datastore_client.key("post", current_user.key.name)
+        post = datastore.Entity(key=post_key)
+        post['subject'] = subject
+        post['message'] = message
+        datastore_client.put(post)
+    return
+
+def login_valid(userid, password):
+    valid = False
+    user = get_user_by_userid(userid)
+    if user != None and userid == user.key.name and password == user['password']:
+        valid = True
+    return valid 
     
 def upload_userimage(selected_image, image_name):
     bucket = storage_client.bucket("cc-assignment1-berke")
@@ -85,5 +126,5 @@ def upload_userimage(selected_image, image_name):
     blob.upload_from_filename(selected_image)
 
 if __name__ == '__main__':
-  app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8080, debug=True)
  

@@ -8,14 +8,19 @@
 <div class="row">
     <div class="col-sm-4"></div>
     <div class="col-sm-4">
+        {% if login_success == False %}
+          <div class="alert alert-danger" role="alert" id="alertdiv" style="display: block;">
+            ID or password is invalid.
+          </div>
+        {% endif %}
         <form action="/login" method="POST">
             <div class="form-group">
               <label for="id">ID:</label>
-              <input type="username" class="form-control" id="id">
+              <input type="username" class="form-control" name="userid">
             </div>
             <div class="form-group">
               <label for="pass">Password:</label>
-              <input type="password" class="form-control" id="pass">
+              <input type="password" class="form-control" name="pass">
             </div>
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
