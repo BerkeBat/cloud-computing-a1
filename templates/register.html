@@ -10,7 +10,7 @@
     <div class="col-sm-4">
         {% if register_valid == False %}
           <div class="alert alert-danger" role="alert" id="alertdiv" style="display: block;">
-            The ID already exists, please try another.
+            The {{ already_exists }} already exists, please try another.
           </div>
         {% endif %}
         <form action="/register" method="POST">

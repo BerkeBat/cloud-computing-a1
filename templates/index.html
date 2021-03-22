@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block body %}
-
 <script>
     function subjectEmptyWarning() {
         subject = document.getElementById('subject')
@@ -23,6 +22,11 @@
     {% if g.current_user == None %}
         <p style="font-size: 28px;"><em>Welcome! Please log in to post</em></p>
     {% else %}
+        {% if g.post_exists == True %}
+          <div class="alert alert-danger" role="alert" id="alertdiv" style="display: block;">
+            Post with that subject already exists. Please try another.
+          </div>
+        {% endif %}
         <form action="/" method="POST" onsubmit="return subjectEmptyWarning()">
             <div class="form-group">
                 <label for="subject">Subject</label>
@@ -36,11 +40,12 @@
         </form>
     {% endif %}
     <hr>
+    <p style="font-size: 28px;"><em>Online Forum Posts</em></p>
     {% for post in posts %}
         <div class="card" style="width: 20rem;">
             <div class="card-body">
                 <h6 class="card-title">{{ post.key.name }}</h6>
-                <p><em>{{ post['datetime'] }} • {{ post['user'] }} </em></p>
+                <p style="font-size: small;"><em>{{ post['datetime'] }} • {{ post['user'] }} </em></p>
                 <p class="card-text">{{ post['message'] }}</p>
             </div>
         </div>

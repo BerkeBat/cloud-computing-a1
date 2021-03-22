@@ -6,31 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     {% block head %}{% endblock %}
   </head>
   <body>
-    <!-- <script src="/static/script.js"></script> -->
-    <nav class="navbar navbar-light bg-light ">
-      <div class="navbar-header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light ">
         <a class="navbar-brand" href="/" id="logo">Online Forum</a>
-      </div>
-      <ul class="navbar-nav navbar-left">
-        <li class="nav-item"><a href="/" class="nav-link">Main Forum</a></li>
-      </ul>
-      <ul class="navbar-nav navbar-right">
-        {% if g.current_user == None %}
-          <li class="nav-item"><a class="nav-link"href="{{ url_for('register') }}"> Register</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}"> Login</a></li>
-        {% else %}
-          <li class="nav-item"><a class="nav-link" href="/user/{{ g.current_user.key.name }}" ><span class="glyphicon glyphicon-user"></span> {{ g.current_user['user_name']}}</a></li>
-          <br>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-        {% endif %}
-        </ul>
+        <div class="navbar-nav ml-auto">
+          {% if g.current_user == None %}
+          <li class="nav-item"><a class="nav-link"href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+          {% else %}
+          <li class="nav-item"><a class="nav-link" href="/user/{{ g.current_user.key.name }}" ><i class="fas fa-user"></i> {{ g.current_user['user_name']}}</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+          {% endif %}
+        </div>
     </nav>
     {% block body %} {% endblock %}
     <div class="col-sm-3"></div>
-    <!-- <p>Berke Batmaz (s3672067) - Cloud Computing S1 2021</p> -->
 </body>
 </html>

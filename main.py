@@ -26,13 +26,14 @@ def index():
     if request.method == 'POST':
         entered_subject = request.form['subject']
         entered_message = request.form['messagearea']
-        post_message(entered_subject, entered_message)
+        if get_post_by_subject(entered_subject) == None:
+            post_message(entered_subject, entered_message)
+        else:
+            g.post_exists = True
     posts_query = datastore_client.query(kind='post')
     posts_query.order = ['-datetime']
-    # posts_query = datastore_client.query()
-    posts = list(posts_query.fetch())
-    # app.logger.info(posts)
-    # posts = datastore_client.get_multi()
+    posts = list(posts_query.fetch(limit=10))
+    
     
     return render_template('index.html', posts = posts)
 
@@ -60,19 +61,21 @@ def register():
     if request.method == 'POST':
         kind = "user"
         id = request.form["userid"]
+        username = request.form['username']
+        password = request.form['pass']
         user_key = datastore_client.key(kind, id)
-        if get_user_by_userid(id) == None:
+        if get_user_by_userid(id) != None:
+            return render_template('register.html', register_valid=False, already_exists = "ID")
+        elif len(get_user_by_username(username)) != 0:
+            return render_template('register.html', register_valid=False, already_exists = "username")
+        else:
             newUser = datastore.Entity(key=user_key)
-            username = request.form['username']
-            password = request.form['pass']
             # user_image = request.form['userimage']
             newUser["user_name"] = username
             newUser["password"] = password
             # upload_userimage(user_image, username)
             datastore_client.put(newUser)
             return redirect(url_for('login'))
-        else:
-            return render_template('register.html', register_valid=False)
     else:
         return render_template('register.html', register_valid=True)
 
@@ -103,29 +106,45 @@ def user(userid):
 def logout():
     global current_user
     current_user = None
+
     return redirect(url_for('index'))
 
 def get_user_by_userid(userid):
     user_key = datastore_client.key("user", str(userid))
     gotten_user = datastore_client.get(user_key)
+
     return  gotten_user
+
+def get_post_by_subject(subject):
+    post_key = datastore_client.key("post", str(subject))
+    gotten_post = datastore_client.get(post_key)
+
+    return  gotten_post
+    
+def get_user_by_username(username):
+    username_query = datastore_client.query(kind='user')
+    username_query.add_filter('user_name', '=', username)
+
+    return list(username_query.fetch())
 
 def post_message(subject, message):
     with datastore_client.transaction():
         post_key = datastore_client.key("post", subject)
         post = datastore.Entity(key=post_key)
-        post['user'] = current_user.key.name
+        post['user'] = current_user['user_name']
+        post['userid'] = current_user.key.name
         post['message'] = message
-        post['datetime'] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+        post['datetime'] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         datastore_client.put(post)
+
     return
 
 def get_posts_by_user(userid):
     posts_query = datastore_client.query(kind='post')
-    posts_query.add_filter('user', '=', userid)
+    posts_query.add_filter('userid', '=', userid)
     posts_query.order = ['-datetime']
     
-    return list(posts_query.fetch())
+    return list(posts_query.fetch(limit=10))
     
 
 def login_valid(userid, password):
@@ -133,6 +152,7 @@ def login_valid(userid, password):
     user = get_user_by_userid(userid)
     if user != None and userid == user.key.name and password == user['password']:
         valid = True
+        
     return valid 
     
 def upload_userimage(selected_image, image_name):

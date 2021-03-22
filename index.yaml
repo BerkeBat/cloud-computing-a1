@@ -2,6 +2,6 @@ indexes:
   
 - kind: post
   properties:
-  - name: user
+  - name: userid
   - name: datetime
     direction: desc
