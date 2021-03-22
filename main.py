@@ -1,12 +1,12 @@
-from urllib.parse import uses_fragment
 from flask import Flask, render_template, request, redirect, g
 from flask.globals import current_app
 from flask.helpers import url_for
 from google.auth.transport import requests
 from google.cloud import datastore, storage
-from google.cloud.datastore import key
+from google.cloud.datastore import key, query
 import logging
 import os
+import datetime
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "D:\\Users\\kanar\\Google Drive\\Classes\\Cloud Computing\\Assignment 1\\Assignment 1-8cc17cf425c1.json"
 logging.basicConfig(level=logging.DEBUG)
@@ -27,8 +27,14 @@ def index():
         entered_subject = request.form['subject']
         entered_message = request.form['messagearea']
         post_message(entered_subject, entered_message)
+    posts_query = datastore_client.query(kind='post')
+    posts_query.order = ['-datetime']
+    # posts_query = datastore_client.query()
+    posts = list(posts_query.fetch())
+    # app.logger.info(posts)
+    # posts = datastore_client.get_multi()
     
-    return render_template('index.html')
+    return render_template('index.html', posts = posts)
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -90,7 +96,8 @@ def user(userid):
     if user == None:
         return "User does not exist"
     else:
-        return render_template('user.html', user = user, pass_change_valid=pass_change_valid)
+        user_posts = get_posts_by_user(userid)
+        return render_template('user.html', user = user, pass_change_valid=pass_change_valid, user_posts = user_posts)
 
 @app.route('/logout')
 def logout():
@@ -105,12 +112,21 @@ def get_user_by_userid(userid):
 
 def post_message(subject, message):
     with datastore_client.transaction():
-        post_key = datastore_client.key("post", current_user.key.name)
+        post_key = datastore_client.key("post", subject)
         post = datastore.Entity(key=post_key)
-        post['subject'] = subject
+        post['user'] = current_user.key.name
         post['message'] = message
+        post['datetime'] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
         datastore_client.put(post)
     return
+
+def get_posts_by_user(userid):
+    posts_query = datastore_client.query(kind='post')
+    posts_query.add_filter('user', '=', userid)
+    posts_query.order = ['-datetime']
+    
+    return list(posts_query.fetch())
+    
 
 def login_valid(userid, password):
     valid = False

@@ -34,7 +34,16 @@
           {% endif %}
     </div>
     <div class="col-sm-4">
-    <h1>Posts</h1>
+    <h2>Posts by User</h2>
+    {% for post in user_posts %}
+    <div class="card" style="width: 20rem;">
+      <div class="card-body">
+        <h6 class="card-title">{{ post.key.name }}</h6>
+        <p><em>{{ post['datetime'] }} • {{ post['user'] }} </em></p>
+        <p class="card-text">{{ post['message'] }}</p>
+      </div>
+    </div>
+    {% endfor %}
     </div>
     <div class="col-sm-3"></div>
 </div>
