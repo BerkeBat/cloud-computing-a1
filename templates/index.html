@@ -40,16 +40,22 @@
         </form>
     {% endif %}
     <hr>
-    <p style="font-size: 28px;"><em>Online Forum Posts</em></p>
-    {% for post in posts %}
-        <div class="card" style="width: 20rem;">
-            <div class="card-body">
-                <h6 class="card-title">{{ post.key.name }}</h6>
-                <p style="font-size: small;"><em>{{ post['datetime'] }} • {{ post['user'] }} </em></p>
-                <p class="card-text">{{ post['message'] }}</p>
-            </div>
+    <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="col-lg-6">
+            <p style="font-size: 28px;"><em>Online Forum Posts</em></p>
+            {% for post in posts %}
+                <div class="card" style="width: 20rem;">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ post.key.name }}</h6>
+                        <p style="font-size: small;"><em>{{ post['datetime'] }} • {{ post['user'] }} </em></p>
+                        <p class="card-text">{{ post['message'] }}</p>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
+        <div class="col-sm-3"></div>
+    </div>
     
     <div class="col-sm-4"></div>
 </div>

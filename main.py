@@ -1,12 +1,7 @@
 from flask import Flask, render_template, request, redirect, g
-from flask.globals import current_app
 from flask.helpers import url_for
-from google.auth.transport import requests
 from google.cloud import datastore, storage
-from google.cloud.datastore import key, query
-import logging
-import os
-import datetime
+import logging, os, datetime
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "D:\\Users\\kanar\\Google Drive\\Classes\\Cloud Computing\\Assignment 1\\Assignment 1-8cc17cf425c1.json"
 logging.basicConfig(level=logging.DEBUG)
@@ -82,7 +77,6 @@ def register():
 @app.route('/user/<string:userid>', methods=['POST', 'GET'])
 def user(userid):
     global current_user
-    app.logger.info(current_user)
     g.current_user = current_user
     pass_change_valid = True
     if request.method == 'POST':
@@ -101,6 +95,16 @@ def user(userid):
     else:
         user_posts = get_posts_by_user(userid)
         return render_template('user.html', user = user, pass_change_valid=pass_change_valid, user_posts = user_posts)
+
+@app.route('/editpost/<string:oldsubject>', methods=['POST', 'GET'])
+def editpost(oldsubject):
+    global current_user
+    g.current_user = current_user
+    if request.method == 'POST':
+        new_subject = request.form['subject']
+        new_message = request.form['messagearea']
+        edit_message(oldsubject, new_subject, new_message)
+    return redirect('/user/' + current_user.key.name)
 
 @app.route('/logout')
 def logout():
@@ -137,6 +141,13 @@ def post_message(subject, message):
         post['datetime'] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         datastore_client.put(post)
 
+    return
+
+def edit_message(oldsubject, newsubject, newmessage):
+    old_post_key = datastore_client.key('post', oldsubject)
+    datastore_client.delete(old_post_key)
+    post_message(newsubject, newmessage)
+    
     return
 
 def get_posts_by_user(userid):

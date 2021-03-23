@@ -5,9 +5,42 @@
 {% endblock %}
 
 {% block body %}
+<script>
+  function toggleEditForm(editButtonId) {
+    var editButtonIndex = editButtonId.substring(editButtonId.length - 1, editButtonId.length);
+    console.log(editButtonIndex);
+    var editButton = document.getElementById(editButtonId);
+    var editForm = document.getElementById('editform'.concat(editButtonIndex));
+    var editSubject = document.getElementById('editsubjectinput'.concat(editButtonIndex));
+    var editMessage = document.getElementById('editmessageinput'.concat(editButtonIndex));
+    if (editForm.style.display == "none") {
+      editForm.style.display = "block";
+      editButton.innerHTML = "Cancel";
+      editSubject.value = document.getElementById("post-card-subject".concat(editButtonIndex)).innerHTML;
+      editMessage.value = document.getElementById("post-card-message".concat(editButtonIndex)).innerHTML;
+    } else {
+      editForm.style.display = "none";
+      editButton.innerHTML = "Edit";
+    }
+    return;
+  }
+
+  function subjectEmptyWarning() {
+        subject = document.getElementById('editsubjectinput')
+        if (subject.value == "") {
+            alert("Please add a subject to your post");
+            return false;
+        }else{
+            return true;
+        }
+    }
+</script>
 <div class="row">
-    <div class="col-sm-3"></div>
+    <div class="col-sm-4">
+     
+    </div>
     <div class="col-sm-2">
+        <h3>User Details</h3>
         <ul class="list-group">
             <li class="list-group-item"><img src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/0.png" style="width: 120px;;height: 120px;"></li>
             <li class="list-group-item "><strong>User ID:</strong> {{ user.key.name }}</li>
@@ -18,7 +51,7 @@
             The old password is incorrect
           </div>
         {% endif %}
-        {% if g.current_user != None and g.current_user.key.name == user.key.name %}
+          {% if g.current_user != None and g.current_user.key.name == user.key.name %}
             <form action="/user/{{ user.key.name }}" method="POST">
               <h3>Change Password</h3>
               <div class="form-group">
@@ -33,15 +66,29 @@
             </form>
           {% endif %}
     </div>
-    <div class="col-sm-4">
+    <div class="col-sm-2">
     <h2>Posts by User</h2>
     {% for post in user_posts %}
+    {% set post_index = user_posts.index(post) %}
       <div class="card" style="width: 20rem;">
         <div class="card-body">
-          <h6 class="card-title">{{ post.key.name }}</h6>
+          <h6 class="card-title" id="post-card-subject{{ post_index }}" >{{ post.key.name }}</h6>
           <p><em>{{ post['datetime'] }} • {{ post['user'] }} </em></p>
-          <p class="card-text">{{ post['message'] }}</p>
-          <button type="button" class="btn btn-secondary">Edit</button>
+          <p class="card-text" id="post-card-message{{ post_index }}">{{ post['message'] }}</p>
+          {% if g.current_user != None and g.current_user.key.name == user.key.name %}
+            <button type="button" class="btn btn-secondary" id='editbutton{{ post_index }}' onclick="toggleEditForm(this.id)" >Edit</button>
+            <form action="/editpost/{{ post.key.name }}" method="POST" id="editform{{ post_index }}" style="display: none;">
+              <div class="form-group">
+                  <label for="subject">Subject</label>
+                  <input type="text" class="form-control" name="subject" id="editsubjectinput{{ post_index }}" required >
+              </div>
+              <div class="form-group">
+                  <label for="messagearea">Message</label>
+                  <textarea class="form-control" name="messagearea" id="editmessageinput{{ post_index }}" rows="3"></textarea>
+              </div>
+              <input type="submit" class="btn btn-primary" value="Submit">
+            </form>
+          {% endif %}
         </div>
       </div>
     {% endfor %}
