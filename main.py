@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, g
 from flask.helpers import url_for
 from google.cloud import datastore, storage
 import logging, os, datetime
+import urllib.request
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "D:\\Users\\kanar\\Google Drive\\Classes\\Cloud Computing\\Assignment 1\\Assignment 1-8cc17cf425c1.json"
 logging.basicConfig(level=logging.DEBUG)
@@ -9,6 +10,7 @@ datastore_client = datastore.Client()
 storage_client = storage.Client()
 app = Flask(__name__)
 current_user = None
+# user_image_url = ""
 
 class CurrentUser:
     def __init__(self, user):
@@ -28,7 +30,6 @@ def index():
     posts_query = datastore_client.query(kind='post')
     posts_query.order = ['-datetime']
     posts = list(posts_query.fetch(limit=10))
-    
     
     return render_template('index.html', posts = posts)
 
@@ -59,16 +60,16 @@ def register():
         username = request.form['username']
         password = request.form['pass']
         user_key = datastore_client.key(kind, id)
+        user_image = request.files['userimage']
         if get_user_by_userid(id) != None:
             return render_template('register.html', register_valid=False, already_exists = "ID")
         elif len(get_user_by_username(username)) != 0:
             return render_template('register.html', register_valid=False, already_exists = "username")
         else:
             newUser = datastore.Entity(key=user_key)
-            # user_image = request.form['userimage']
             newUser["user_name"] = username
             newUser["password"] = password
-            # upload_userimage(user_image, username)
+            upload_userimage(user_image, id)
             datastore_client.put(newUser)
             return redirect(url_for('login'))
     else:
@@ -167,10 +168,11 @@ def login_valid(userid, password):
     return valid 
     
 def upload_userimage(selected_image, image_name):
-    bucket = storage_client.bucket("cc-assignment1-berke")
-    blob = bucket.blob(image_name)
+    bucket = storage_client.bucket("cc-assignment1-berke.appspot.com")
+    blob = bucket.blob(image_name + ".png")
+    blob.upload_from_file(selected_image)
 
-    blob.upload_from_filename(selected_image)
+    return
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)

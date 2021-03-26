@@ -45,10 +45,13 @@
         <div class="col-lg-6">
             <p style="font-size: 28px;"><em>Online Forum Posts</em></p>
             {% for post in posts %}
-                <div class="card" style="width: 20rem;">
+                <div class="card text-center" style="width: 20rem;">
                     <div class="card-body">
                         <h6 class="card-title">{{ post.key.name }}</h6>
-                        <p style="font-size: small;"><em>{{ post['datetime'] }} • {{ post['user'] }} </em></p>
+                        <p style="font-size: small;"><em>{{ post['datetime'] }} • 
+                            <img style="width: 15px;height: 15px;" src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/{{ post['userid'] }}.png" alt="{{ post['userid'] }}"> 
+                            {{ post['user'] }} 
+                        </em></p>
                         <p class="card-text">{{ post['message'] }}</p>
                     </div>
                 </div>

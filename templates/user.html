@@ -36,13 +36,11 @@
     }
 </script>
 <div class="row">
-    <div class="col-sm-4">
-     
-    </div>
+    <div class="col-sm-4"></div>
     <div class="col-sm-2">
         <h3>User Details</h3>
         <ul class="list-group">
-            <li class="list-group-item"><img src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/0.png" style="width: 120px;;height: 120px;"></li>
+            <li class="list-group-item"><img src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/{{ user.key.name }}.png" style="width: 120px;;height: 120px;"></li>
             <li class="list-group-item "><strong>User ID:</strong> {{ user.key.name }}</li>
             <li class="list-group-item"><strong>Username:</strong> {{ user['user_name'] }}</li>
         </ul>

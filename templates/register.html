@@ -5,6 +5,21 @@
 {% endblock %}
 
 {% block body %}
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script>
+  function showImagePreview() {
+    const selectedUserImage = document.getElementById('userimage').files[0];
+    var userImageURL = window.URL.createObjectURL(selectedUserImage);
+    const userImage = document.createElement('img');
+    userImage.src = userImageURL;
+    userImage.id = "uploadeduserimage";
+    userImage.height = 60;
+    if (document.getElementById('uploadeduserimage') == null) {
+      document.getElementById('imageselectgroup').appendChild(userImage);
+    }
+    return;
+  }
+</script>
 <div class="row">
     <div class="col-sm-4"></div>
     <div class="col-sm-4">
@@ -13,10 +28,10 @@
             The {{ already_exists }} already exists, please try another.
           </div>
         {% endif %}
-        <form action="/register" method="POST">
+        <form action="/register" enctype="multipart/form-data" method="POST">
             <div class="form-group">
               <label for="userid">ID:</label>
-              <input type="username" class="form-control" name="userid">
+              <input type="username" class="form-control" name="userid" id="userid">
             </div>
             <div class="form-group">
               <label for="username">Username:</label>
@@ -26,12 +41,13 @@
               <label for="pass">Password:</label>
               <input type="password" class="form-control" name="pass">
             </div>
-            <!-- <div class="form-group">
+            <div class="form-group" id="imageselectgroup">
                 <label for="picture">User Image:</label>
-                <input type="file" class="form-control" name="userimage" />
-            </div> -->
+                <input type="file" class="form-control" name="userimage" id="userimage" onchange="showImagePreview()"/>
+            </div>
             <input type="submit" class="btn btn-primary" value="Register">
           </form>
+  
     </div>
     <div class="col-sm-4"></div>
 </div>
