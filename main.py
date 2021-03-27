@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, g
 from flask.helpers import url_for
 from google.cloud import datastore, storage
 import logging, os, datetime
-import urllib.request
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "D:\\Users\\kanar\\Google Drive\\Classes\\Cloud Computing\\Assignment 1\\Assignment 1-8cc17cf425c1.json"
 logging.basicConfig(level=logging.DEBUG)
@@ -10,7 +9,6 @@ datastore_client = datastore.Client()
 storage_client = storage.Client()
 app = Flask(__name__)
 current_user = None
-# user_image_url = ""
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -69,11 +67,15 @@ def register():
         elif len(get_user_by_username(username)) != 0:
             return render_template('register.html', register_valid=False, already_exists = "username")
         else:
-            newUser = datastore.Entity(key=user_key)
-            newUser["user_name"] = username
-            newUser["password"] = password
-            upload_image("users", user_image, id)
-            datastore_client.put(newUser)
+            new_user = datastore.Entity(key=user_key)
+            new_user["user_name"] = username
+            new_user["password"] = password
+            if user_image:
+                upload_image("users", user_image, id)
+                new_user['hasimage'] = True
+            else:
+                new_user['hasimage'] = False
+            datastore_client.put(new_user)
             return redirect(url_for('login'))
     else:
         return render_template('register.html', register_valid=True)
@@ -108,8 +110,9 @@ def editpost(oldsubject):
         new_image = request.files['postimage']
         if not new_image:
             image_changed = False
+        else:
+            image_changed = True
         old_post = get_post_by_subject(oldsubject)
-        app.logger.info(old_post)
         edit_message(oldsubject, new_subject, new_message, new_image, image_changed, old_post['hasimage'])
         
     return redirect('/user/' + current_user.key.name)
@@ -148,6 +151,7 @@ def get_user_by_username(username):
     return list(username_query.fetch())
 
 def post_message(subject, message, hasimage):
+    global current_user
     with datastore_client.transaction():
         post_key = datastore_client.key("post", subject)
         post = datastore.Entity(key=post_key)
@@ -156,6 +160,7 @@ def post_message(subject, message, hasimage):
         post['message'] = message
         post['datetime'] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         post['hasimage'] = hasimage
+        post['userhasimage'] = current_user['hasimage']
         datastore_client.put(post)
 
     return

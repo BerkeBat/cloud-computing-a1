@@ -24,22 +24,6 @@
     }
     return;
   }
-
-  function checkUserImageExists() {
-    // Guleria A., 27/03/2021, Detect 404 error on page load [Source Code] https://stackoverflow.com/questions/26630650/detect-404-error-on-page-load
-    var baseURL = "https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/users/";
-    var userID = "{{ user.key.name }}.png";
-    var url = baseURL.concat(userID);
-    console.log(url);
-    var http = new XMLHttpRequest();
-    var userImgTag = document.getElementById("userimg");
-    http.open('HEAD', url, false);
-    http.send();
-    if (http.status != 404){
-      userImgTag.src = "/static/default.png";
-    }
-  }
-
   function subjectEmptyWarning() {
         subject = document.getElementById('editsubjectinput')
         if (subject.value == "") {
@@ -54,7 +38,13 @@
     <div class="col-sm-2">
         <h3>User Details</h3>
         <ul class="list-group">
-            <li class="list-group-item"><img onload="checkUserImageExists();" id="userimg" src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/users/{{ user.key.name }}.png" style="width: 120px;;height: 120px;"></li>
+            <li class="list-group-item">
+            {% if user['hasimage'] == true %}
+              <img id="userimg" src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/users/{{ user.key.name }}.png" style="width: 120px;;height: 120px;">
+            {% else %}
+              <img id="userimg" src="/static/default.png" style="width: 120px;;height: 120px;">
+            {% endif %}
+            </li>
             <li class="list-group-item "><strong>User ID:</strong> {{ user.key.name }}</li>
             <li class="list-group-item"><strong>Username:</strong> {{ user['user_name'] }}</li>
         </ul>
@@ -107,7 +97,7 @@
               {% if post['hasimage'] == true %}
                 <div class="form-group" id="imageselectgroup">
                   <label for="picture">Update Post Image:</label>
-                  <input type="file" class="form-control" name="postimage" id="postimage{{ post_index }}">
+                  <input type="file" class="form-control" name="postimage" id="postimage">
                 </div>
               {% endif %}
               <input type="submit" class="btn btn-primary" value="Update">

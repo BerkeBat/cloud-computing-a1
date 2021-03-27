@@ -18,7 +18,15 @@
             <li class="nav-item"><a class="nav-link"href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
           {% else %}
-            <a href="/user/{{ g.current_user.key.name }}"><img  src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/users/{{ g.current_user.key.name }}.png" style="width: 40px;;height: 40px;"></a>
+            <a href="/user/{{ g.current_user.key.name }}">
+            {% if g.current_user['hasimage'] == true %}
+              <img id="userimg" src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/users/{{ g.current_user.key.name }}.png" style="width: 40px;;height: 40px;">
+            {% else %}
+              <img id="userimg" src="/static/default.png" style="width: 40px;;height: 40px;">
+            {% endif %}
+            <!-- <img  src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/users/{{ g.current_user.key.name }}.png" style="width: 40px;;height: 40px;"> -->
+          
+            </a>
             <li class="nav-item"><a class="nav-link" href="/user/{{ g.current_user.key.name }}" ><i class="fas fa-user"></i> {{ g.current_user['user_name']}}</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
           {% endif %}
