@@ -5,15 +5,14 @@
 {% endblock %}
 
 {% block body %}
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 <script>
-  function showImagePreview() {
+  function showImagePreview(){
     const selectedUserImage = document.getElementById('userimage').files[0];
     var userImageURL = window.URL.createObjectURL(selectedUserImage);
     const userImage = document.createElement('img');
     userImage.src = userImageURL;
     userImage.id = "uploadeduserimage";
-    userImage.height = 60;
+    userImage.height = 120;
     if (document.getElementById('uploadeduserimage') == null) {
       document.getElementById('imageselectgroup').appendChild(userImage);
     }

@@ -12,10 +12,6 @@ app = Flask(__name__)
 current_user = None
 # user_image_url = ""
 
-class CurrentUser:
-    def __init__(self, user):
-        self.user = user
-
 @app.route('/', methods=['POST', 'GET'])
 def index():
     global current_user
@@ -23,8 +19,15 @@ def index():
     if request.method == 'POST':
         entered_subject = request.form['subject']
         entered_message = request.form['messagearea']
+        post_image = request.files['postimage']
+        if request.files['postimage']:
+            has_image = True
+        else:
+            has_image = False
         if get_post_by_subject(entered_subject) == None:
-            post_message(entered_subject, entered_message)
+            post_message(entered_subject, entered_message, has_image)
+            if has_image:
+                upload_image("posts", post_image, entered_subject)
         else:
             g.post_exists = True
     posts_query = datastore_client.query(kind='post')
@@ -69,7 +72,7 @@ def register():
             newUser = datastore.Entity(key=user_key)
             newUser["user_name"] = username
             newUser["password"] = password
-            upload_userimage(user_image, id)
+            upload_image("users", user_image, id)
             datastore_client.put(newUser)
             return redirect(url_for('login'))
     else:
@@ -92,25 +95,30 @@ def user(userid):
                 pass_change_valid = False
     user = get_user_by_userid(userid)
     if user == None:
-        return "User does not exist"
+        return "<a href='/'>User does not exist. Click to return to the main forum</a>"
     else:
         user_posts = get_posts_by_user(userid)
         return render_template('user.html', user = user, pass_change_valid=pass_change_valid, user_posts = user_posts)
 
 @app.route('/editpost/<string:oldsubject>', methods=['POST', 'GET'])
 def editpost(oldsubject):
-    global current_user
-    g.current_user = current_user
     if request.method == 'POST':
         new_subject = request.form['subject']
         new_message = request.form['messagearea']
-        edit_message(oldsubject, new_subject, new_message)
+        new_image = request.files['postimage']
+        if not new_image:
+            image_changed = False
+        old_post = get_post_by_subject(oldsubject)
+        app.logger.info(old_post)
+        edit_message(oldsubject, new_subject, new_message, new_image, image_changed, old_post['hasimage'])
+        
     return redirect('/user/' + current_user.key.name)
 
 @app.route('/logout')
 def logout():
     global current_user
     current_user = None
+    g.current_user = None
 
     return redirect(url_for('index'))
 
@@ -125,6 +133,13 @@ def get_post_by_subject(subject):
     gotten_post = datastore_client.get(post_key)
 
     return  gotten_post
+
+def get_post_image_by_subject(subject):
+    bucket = storage_client.bucket("cc-assignment1-berke.appspot.com")
+    gotten_image = bucket.blob("posts/" + subject + ".png")
+    app.logger.info(gotten_image)
+
+    return gotten_image
     
 def get_user_by_username(username):
     username_query = datastore_client.query(kind='user')
@@ -132,7 +147,7 @@ def get_user_by_username(username):
 
     return list(username_query.fetch())
 
-def post_message(subject, message):
+def post_message(subject, message, hasimage):
     with datastore_client.transaction():
         post_key = datastore_client.key("post", subject)
         post = datastore.Entity(key=post_key)
@@ -140,14 +155,23 @@ def post_message(subject, message):
         post['userid'] = current_user.key.name
         post['message'] = message
         post['datetime'] = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        post['hasimage'] = hasimage
         datastore_client.put(post)
 
     return
 
-def edit_message(oldsubject, newsubject, newmessage):
+def edit_message(oldsubject, newsubject, newmessage, newimage, imagechanged, hasimage):
+    if hasimage:
+        bucket = storage_client.bucket("cc-assignment1-berke.appspot.com")
+        blob = bucket.blob("{}/{}.png".format("posts", oldsubject))
+        if imagechanged:
+            blob.delete()
+            upload_image("posts", newimage, newsubject)
+        else:
+            bucket.rename_blob(blob, "posts/" + newsubject + ".png")
     old_post_key = datastore_client.key('post', oldsubject)
     datastore_client.delete(old_post_key)
-    post_message(newsubject, newmessage)
+    post_message(newsubject, newmessage, hasimage)
     
     return
 
@@ -167,9 +191,9 @@ def login_valid(userid, password):
         
     return valid 
     
-def upload_userimage(selected_image, image_name):
+def upload_image(type, selected_image, image_name):
     bucket = storage_client.bucket("cc-assignment1-berke.appspot.com")
-    blob = bucket.blob(image_name + ".png")
+    blob = bucket.blob(type + "/" + image_name + ".png")
     blob.upload_from_file(selected_image)
 
     return

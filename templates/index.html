@@ -17,17 +17,17 @@
     }
 </script>
 <div class="row">
-    <div class="col-sm-4"></div>
-    <div class="col-sm-4">
+    <div class="col-sm-4" style="margin-left: 50px;margin-right: 50px;">
     {% if g.current_user == None %}
         <p style="font-size: 28px;"><em>Welcome! Please log in to post</em></p>
     {% else %}
+        <p style="font-size: 28px;"><em>Post a Message</em></p>
         {% if g.post_exists == True %}
-          <div class="alert alert-danger" role="alert" id="alertdiv" style="display: block;">
+            <div class="alert alert-danger" role="alert" id="alertdiv" style="display: block;">
             Post with that subject already exists. Please try another.
-          </div>
+            </div>
         {% endif %}
-        <form action="/" method="POST" onsubmit="return subjectEmptyWarning()">
+        <form action="/" method="POST" enctype="multipart/form-data" onsubmit="return subjectEmptyWarning()">
             <div class="form-group">
                 <label for="subject">Subject</label>
                 <input type="text" class="form-control" id="subject" name="subject" required>
@@ -36,28 +36,35 @@
                 <label for="messagearea">Message</label>
                 <textarea class="form-control" name="messagearea" rows="3"></textarea>
             </div>
+            <div class="form-group" id="imageselectgroup">
+                <label for="picture">Post Image:</label>
+                <input type="file" class="form-control" name="postimage" id="postimage" onchange="showImagePreview()"/>
+            </div>
             <input type="submit" class="btn btn-primary" value="Submit">
         </form>
-    {% endif %}
-    <hr>
-    <div class="row">
-        <div class="col-sm-3"></div>
-        <div class="col-lg-6">
+        <hr>
+    {% endif %}     
+    </div>
+    <div class="col-sm-4">
             <p style="font-size: 28px;"><em>Online Forum Posts</em></p>
-            {% for post in posts %}
-                <div class="card text-center" style="width: 20rem;">
-                    <div class="card-body">
-                        <h6 class="card-title">{{ post.key.name }}</h6>
-                        <p style="font-size: small;"><em>{{ post['datetime'] }} • 
-                            <img style="width: 15px;height: 15px;" src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/{{ post['userid'] }}.png" alt="{{ post['userid'] }}"> 
-                            {{ post['user'] }} 
-                        </em></p>
-                        <p class="card-text">{{ post['message'] }}</p>
+            {% if posts|length < 1 %}
+                <p style="font-size: 18px;"><em>There are no posts on the Online Forum</em></p>
+            {% else %}
+                {% for post in posts %}
+                    <div class="card text-left" style="width: 30rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ post.key.name }}</h5>
+                            <p style="font-size: 13px;"><em> <img style="width: 30px;height: 30px;" src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/users/{{ post['userid'] }}.png" alt="{{ post['userid'] }}">
+                                {{ post['user'] }} • {{ post['datetime'] }}
+                            </em></p>
+                            <p style="font-size: 18px;" class="card-text">{{ post['message'] }}</p>
+                            {% if post['hasimage'] == true %}
+                                <img style="width: 438px;" src="https://storage.cloud.google.com/cc-assignment1-berke.appspot.com/posts/{{ post.key.name }}.png" alt="{{ post.key.name}}">
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
-        </div>
-        <div class="col-sm-3"></div>
+                {% endfor %}
+            {% endif %}
     </div>
     
     <div class="col-sm-4"></div>
