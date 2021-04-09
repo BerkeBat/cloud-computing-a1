@@ -104,15 +104,19 @@ def user(userid):
 
 @app.route('/editpost/<string:oldsubject>', methods=['POST', 'GET'])
 def editpost(oldsubject):
+    old_post = get_post_by_subject(oldsubject)
     if request.method == 'POST':
         new_subject = request.form['subject']
         new_message = request.form['messagearea']
-        new_image = request.files['postimage']
-        if not new_image:
-            image_changed = False
+        if old_post['hasimage'] == True:
+            new_image = request.files['postimage']
+            if not new_image:
+                image_changed = False
+            else:
+                image_changed = True
         else:
-            image_changed = True
-        old_post = get_post_by_subject(oldsubject)
+            new_image = None
+            image_changed = False
         edit_message(oldsubject, new_subject, new_message, new_image, image_changed, old_post['hasimage'])
         
     return redirect('/user/' + current_user.key.name)
@@ -205,4 +209,5 @@ def upload_image(type, selected_image, image_name):
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
+    # app.run(host='0.0.0.0')
  
