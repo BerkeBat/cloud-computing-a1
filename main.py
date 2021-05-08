@@ -3,7 +3,7 @@ from flask.helpers import url_for
 from google.cloud import datastore, storage
 import logging, os, datetime
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "D:\\Users\\kanar\\Google Drive\\Classes\\Cloud Computing\\Assignment 1\\Assignment 1-8cc17cf425c1.json"
+
 logging.basicConfig(level=logging.DEBUG)
 datastore_client = datastore.Client()
 storage_client = storage.Client()
@@ -104,6 +104,8 @@ def user(userid):
 
 @app.route('/editpost/<string:oldsubject>', methods=['POST', 'GET'])
 def editpost(oldsubject):
+    global current_user
+    g.current_user = current_user
     old_post = get_post_by_subject(oldsubject)
     if request.method == 'POST':
         new_subject = request.form['subject']
